@@ -114,7 +114,7 @@
   users.users.jevin = {
     shell = pkgs.zsh;
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "docker" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "networkmanager" "docker" "dialout"]; # Dialout if for usb/serial access for arduino
   };
 
   # Add unstable packages: https://nixos.wiki/wiki/FAQ/Pinning_Nixpkgs
@@ -126,8 +126,10 @@
         config = config.nixpkgs.config;
       };
     };
+
+
     permittedInsecurePackages = [
-      "electron-11.5.0"
+      "electron"
       "todoist-electron"
       #"adobe-reader"
     ];
@@ -173,6 +175,13 @@
     dropbox
     libreoffice
     unzip
+    todoist-electron
+    findutils # For ranger
+    mlocate # For ranger
+    fzf # For ranger
+    unstable.yt-dlp
+    arduino
+    kicad
   ];
 
   programs.zsh.enable = true;
@@ -188,7 +197,7 @@
       mako # notification daemon
       rofi
       rofi-calc
-      wofi
+      #wofi
       wlsunset
       pamixer
       grim
@@ -202,6 +211,10 @@
       blueberry
       copyq
     ];
+  };
+
+  environment.sessionVariables = {
+    _JAVA_AWT_WM_NONREPARENTING = "1"; # For Arduino & Wayland
   };
 
 
