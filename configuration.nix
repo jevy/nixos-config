@@ -138,7 +138,6 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    vim 
     wget
     firefox
     neofetch
@@ -154,7 +153,7 @@
     kitty
     unstable._1password-gui
     unstable.slack
-    k9s
+    unstable.k9s
     kubectl
     docker
     ripgrep
@@ -182,10 +181,28 @@
     unstable.yt-dlp
     arduino
     kicad
+    tmux
+    mutt-wizard
+    neomutt # mutt-wizard
+    curl # mutt-wizard
+    isync # mutt-wizard
+    msmtp # mutt-wizard
+    pass # mutt-wizard
+    gnupg # mutt-wizard
+    pinentry # mutt-wizard
+    notmuch # mutt-wizard
+    lieer # mutt-wizard
+    awscli2
   ];
 
+  programs.gnupg.agent.enable = true;
+
   programs.zsh.enable = true;
-  programs.vim.defaultEditor = true ;  
+  programs.vim = {
+    defaultEditor = true ;  
+    package = pkgs.vimHugeX;
+  };
+
   programs.sway = {
     enable = true;
     wrapperFeatures.gtk = true; # so that gtk works properly
@@ -245,6 +262,8 @@
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
+  
+  services.fwupd.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
