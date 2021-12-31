@@ -6,7 +6,7 @@
 
 {
   imports =
-    [ 
+    [
       <nixos-hardware/lenovo/thinkpad/x280>
       ./hardware-configuration.nix
     ];
@@ -106,6 +106,17 @@
   hardware.sane.drivers.scanSnap.enable = true;
   hardware.enableAllFirmware = true;
 
+  # Amateur radio stuff
+
+  services.sdrplayApi.enable = true;
+  nixpkgs.overlays = [
+    (
+      self: super:
+      {
+        soapysdr = super.soapysdr.override { extraPackages = [ super.soapysdrplay ]; };
+      }
+    )
+  ];
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
@@ -145,7 +156,6 @@
     spotify
     unstable.obsidian
     git
-    python # For vim
     unstable.zoom-us
     speedtest-cli
     pavucontrol
@@ -192,14 +202,38 @@
     pinentry # mutt-wizard
     notmuch # mutt-wizard
     lieer # mutt-wizard
+    lynx # mutt-wizard
+    abook # mutt-wizard
+    urlview # mutt-wizard
     awscli2
+    python38Full
+    python38Packages.wxPython_4_0
+    hugo
+    nodejs-16_x
+    networkmanager-l2tp
+    qbittorrent
+    pywal
+    steam
+    wally-cli
+    discord
+    vlc
+    soapysdr
+    # soapysdrplay
+    # soapyrtlsdr
+    # soapyaudio
+    cubicsdr
+    sdrplay
+    sdrangel
+    gqrx
+    sdrpp
+    soapysdr-with-plugins
   ];
 
   programs.gnupg.agent.enable = true;
 
   programs.zsh.enable = true;
   programs.vim = {
-    defaultEditor = true ;  
+    defaultEditor = true ;
     package = pkgs.vimHugeX;
   };
 
@@ -220,36 +254,40 @@
       grim
       swappy
       slurp
-      flashfocus
       clipman
       brightnessctl
       autotiling
       wdisplays
       blueberry
       copyq
+      kooha
+      wf-recorder
     ];
   };
 
   environment.sessionVariables = {
     _JAVA_AWT_WM_NONREPARENTING = "1"; # For Arduino & Wayland
+    WLR_DRM_NO_MODIFIERS = "1"; # For external monitor issues in sway
   };
 
 
   # ----- USER STUFF ------
   #
   #
-  fonts.fonts = with pkgs; [
-    noto-fonts
-    noto-fonts-cjk
-    noto-fonts-emoji
-    meslo-lg
-    font-awesome-ttf
-    weather-icons
-  ];
+  fonts = {
+    fonts = [
+              pkgs.meslo-lgs-nf
+              pkgs.weather-icons
+            ];
+            fontconfig.defaultFonts.emoji = [
+              "MesloLGS NF"
+              "Weather Icons"
+            ];
+  };
 
   virtualisation.docker.enable = true;
 
- 
+
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
@@ -262,7 +300,7 @@
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
-  
+
   services.fwupd.enable = true;
 
   # Open ports in the firewall.
