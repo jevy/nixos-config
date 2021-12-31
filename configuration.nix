@@ -89,7 +89,14 @@
 
   # Enable sound.
   sound.enable = true;
+  sound.mediaKeys.enable = true;
+  sound.mediaKeys.volumeStep = "10%";
   hardware.bluetooth.enable = true;
+  hardware.bluetooth.settings = {
+    General = {
+      Enable = "Source,Sink,Media,Socket";
+    };
+  };
   hardware.pulseaudio = {
     enable = true;
     extraModules = [ pkgs.pulseaudio-modules-bt ];
@@ -107,7 +114,7 @@
     (
       self: super:
       {
-        soapysdr = super.soapysdr.override { extraPackages = [ super.soapysdrplay ]; };
+        soapysdr-with-plugins = self.soapysdr.override { extraPackages = [ self.soapysdrplay ]; };
       }
     )
   ];
@@ -119,7 +126,7 @@
   users.users.jevin = {
     shell = pkgs.zsh;
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "docker" "dialout"]; # Dialout if for usb/serial access for arduino
+    extraGroups = [ "wheel" "networkmanager" "docker" "dialout" "audio"]; # Dialout if for usb/serial access for arduino
   };
 
   # Add unstable packages: https://nixos.wiki/wiki/FAQ/Pinning_Nixpkgs
@@ -211,16 +218,10 @@
     wally-cli
     discord
     vlc
-    soapysdr
-    # soapysdrplay
-    # soapyrtlsdr
-    # soapyaudio
     cubicsdr
-    sdrplay
     sdrangel
     gqrx
     sdrpp
-    soapysdr-with-plugins
     unstable.element-desktop-wayland
     blueberry
   ];
