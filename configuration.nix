@@ -77,13 +77,6 @@
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
-  hardware.bluetooth.enable = true;
-  # hardware.bluetooth.settings = {
-  #   General = {
-  #     Enable = "Source,Sink,Media,Socket";
-  #   };
-  # };
-  
 
   # Configure keymap in X11
   # services.xserver.layout = "us";
@@ -96,6 +89,7 @@
 
   # Enable sound.
   sound.enable = true;
+  hardware.bluetooth.enable = true;
   hardware.pulseaudio = {
     enable = true;
     extraModules = [ pkgs.pulseaudio-modules-bt ];
@@ -227,6 +221,8 @@
     gqrx
     sdrpp
     soapysdr-with-plugins
+    unstable.element-desktop-wayland
+    blueberry
   ];
 
   programs.gnupg.agent.enable = true;
@@ -258,7 +254,6 @@
       brightnessctl
       autotiling
       wdisplays
-      blueberry
       copyq
       kooha
       wf-recorder
