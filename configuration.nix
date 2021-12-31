@@ -113,7 +113,7 @@
     (
       self: super:
       {
-        soapysdr = super.soapysdr.override { extraPackages = [ super.soapysdrplay ]; };
+        soapysdr-with-plugins = super.soapysdr.override { extraPackages = [ super.soapysdrplay ]; };
       }
     )
   ];
