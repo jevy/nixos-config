@@ -260,6 +260,7 @@
       copyq
       kooha
       wf-recorder
+      jq # For waybar weather
     ];
   };
 
