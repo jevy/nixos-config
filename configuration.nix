@@ -87,10 +87,14 @@
   services.printing.drivers = [ pkgs.hplip ];
   # Jevin - To add the printer; 1. `nix-shell -p hplip` 2. hp-makeuri <IP> 3. Add that URL to cups
 
+  services.chrony.enable = true;
+  services.timesyncd.enable = false;
+
   # Enable sound.
   # sound.enable = false;
   hardware.bluetooth.enable = true;
   hardware.pulseaudio.enable = false;
+  programs.noisetorch.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -224,8 +228,11 @@
     sdrangel
     gqrx
     sdrpp
+    wsjtx
     unstable.element-desktop-wayland
     blueberry
+    helvum
+    esphome
   ];
 
   programs.gnupg.agent.enable = true;
