@@ -18,6 +18,13 @@
     ];
   };
 
+  services.cron = {
+    enable = true;
+    systemCronJobs = [
+      "0 17 * * *   /home/jevin/code/github/duplicity-backup.sh/duplicity-backup.sh -c /home/jevin/.config/duplicity-backup.conf -b"
+    ];
+  };
+
 
   # Use the systemd-boot EFI boot loader.
   # boot.loader.systemd-boot.enable = true;
@@ -233,6 +240,7 @@
     blueberry
     helvum
     esphome
+    duplicity
   ];
 
   programs.gnupg.agent.enable = true;
