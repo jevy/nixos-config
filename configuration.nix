@@ -18,11 +18,26 @@
     ];
   };
 
-  services.cron = {
-    enable = true;
-    systemCronJobs = [
-      "0 17 * * *   /home/jevin/code/github/duplicity-backup.sh/duplicity-backup.sh -c /home/jevin/.config/duplicity-backup.conf -b"
-    ];
+  #
+  # Backup
+  # Reference: https://www.codyhiar.com/blog/repeated-tasks-with-systemd-service-timers-on-nixos/
+  # To make it run at the user level, need to do this: https://nixos.org/manual/nixos/stable/index.html#sect-nixos-systemd-nixos
+  # I just copied all my ssh stuff into the root dir for now.
+
+  systemd.services.duplicity_backup= {
+    serviceConfig.Type = "oneshot";
+    path = with pkgs; [ bash duplicity nawk ];
+    script = ''
+      /home/jevin/code/github/duplicity-backup.sh/duplicity-backup.sh -c /home/jevin/.config/duplicity-backup.conf -b
+    '';
+  };
+  systemd.timers.duplicity_backup = {
+    wantedBy = [ "timers.target" ];
+    partOf = [ "duplicity_backup.service" ];
+    timerConfig = {
+      OnUnitActiveSec = "24h"; # 24 hours since it was run last
+      Unit = "duplicity_backup.service";
+    };
   };
 
 
@@ -128,6 +143,7 @@
       self: super:
       {
         soapysdr-with-plugins = self.soapysdr.override { extraPackages = [ self.soapysdrplay ]; };
+        sdrpp-with-sdrplay = self.sdrpp.override { sdrplay_source= true; };
       }
     )
   ];
@@ -234,13 +250,15 @@
     cubicsdr
     sdrangel
     gqrx
-    sdrpp
+    sdrpp-with-sdrplay
+    hamlib_4
     wsjtx
     unstable.element-desktop-wayland
     blueberry
     helvum
     esphome
     duplicity
+    etcher
   ];
 
   programs.gnupg.agent.enable = true;
