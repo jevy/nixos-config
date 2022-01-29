@@ -18,6 +18,10 @@
     ];
   };
 
+  services.hardware.bolt.enable = true;
+
+  # services.sshd.enable = true;
+
   #
   # Backup
   # Reference: https://www.codyhiar.com/blog/repeated-tasks-with-systemd-service-timers-on-nixos/
@@ -26,7 +30,7 @@
 
   systemd.services.duplicity_backup= {
     serviceConfig.Type = "oneshot";
-    path = with pkgs; [ bash duplicity nawk ];
+    path = with pkgs; [ bash duplicity nawk jq ];
     script = ''
       /home/jevin/code/github/duplicity-backup.sh/duplicity-backup.sh -c /home/jevin/.config/duplicity-backup.conf -b
     '';
@@ -146,6 +150,20 @@
         sdrpp-with-sdrplay = self.sdrpp.override { sdrplay_source= true; };
       }
     )
+    # Zoom screen sharing
+    (
+      self: super:
+      {
+       zoomUsFixed = pkgs.zoom-us.overrideAttrs (old: {
+        postFixup = old.postFixup + ''
+        wrapProgram $out/bin/zoom-us --unset XDG_SESSION_TYPE
+      '';});
+         zoom = pkgs.zoom-us.overrideAttrs (old: {
+      postFixup = old.postFixup + ''
+        wrapProgram $out/bin/zoom --unset XDG_SESSION_TYPE
+      '';});
+      }
+      )
   ];
 
   # Enable touchpad support (enabled default in most desktopManager).
@@ -157,6 +175,12 @@
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" "docker" "dialout" "audio"]; # Dialout if for usb/serial access for arduino
   };
+
+  # users.users.tyler = {
+  #   shell = pkgs.zsh;
+  #   isNormalUser = true;
+  #   extraGroups = [ "wheel" "networkmanager" "docker" "dialout" "audio"]; # Dialout if for usb/serial access for arduino
+  # };
 
   # Add unstable packages: https://nixos.wiki/wiki/FAQ/Pinning_Nixpkgs
   # Be sure to change the added channel to match the actually channel below
@@ -199,7 +223,7 @@
     ripgrep
     file
     ffmpeg
-    imagemagick
+    imagemagickBig
     google-chrome
     killall
     ruby
@@ -211,6 +235,7 @@
     ldns # drill
     kubernetes-helm
     zathura
+    xournalpp
     dropbox
     libreoffice
     unzip
@@ -233,8 +258,10 @@
     notmuch # mutt-wizard
     lieer # mutt-wizard
     lynx # mutt-wizard
+    w3m # mutt-wizard
     abook # mutt-wizard
-    urlview # mutt-wizard
+    urlscan # mutt-wizard
+    python38Packages.goobook # mutt
     awscli2
     python38Full
     python38Packages.wxPython_4_0
@@ -259,6 +286,16 @@
     esphome
     duplicity
     etcher
+    signal-desktop
+    ansible_2_10
+    gcalcli
+    unstable.nix-template
+    termdown
+    httpie
+    kubectx
+    todoist
+    peco # For todoist
+    qalculate-gtk
   ];
 
   programs.gnupg.agent.enable = true;
@@ -302,6 +339,10 @@
     WLR_DRM_NO_MODIFIERS = "1"; # For external monitor issues in sway
   };
 
+
+  virtualisation.virtualbox.host.enable = true;
+  users.extraGroups.vboxusers.members = [ "jevin" ];
+  virtualisation.virtualbox.host.enableExtensionPack = true;
 
   # ----- USER STUFF ------
   #
@@ -348,6 +389,7 @@
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "21.11"; # Did you read the comment?
+  boot.kernelPackages = pkgs.linuxPackages_5_15;
 
 }
 
