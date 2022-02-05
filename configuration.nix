@@ -257,10 +257,11 @@
     pinentry # mutt-wizard
     notmuch # mutt-wizard
     lieer # mutt-wizard
-    lynx # mutt-wizard
     w3m # mutt-wizard
     abook # mutt-wizard
     urlscan # mutt-wizard
+    poppler_utils # mutt-wizard
+    mailcap
     python38Packages.goobook # mutt
     awscli2
     python38Full
@@ -296,6 +297,8 @@
     todoist
     peco # For todoist
     qalculate-gtk
+    apprise
+    pandoc
   ];
 
   programs.gnupg.agent.enable = true;
