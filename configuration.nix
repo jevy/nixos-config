@@ -18,7 +18,16 @@
     ];
   };
 
+  hardware.keyboard.zsa.enable = true;
+
   services.hardware.bolt.enable = true;
+
+  nix = {
+    package = pkgs.nixUnstable; # or versioned attributes like nix_2_4
+    extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
+   };
 
   # services.sshd.enable = true;
 
@@ -28,22 +37,21 @@
   # To make it run at the user level, need to do this: https://nixos.org/manual/nixos/stable/index.html#sect-nixos-systemd-nixos
   # I just copied all my ssh stuff into the root dir for now.
 
-  systemd.services.duplicity_backup= {
-    serviceConfig.Type = "oneshot";
-    path = with pkgs; [ bash duplicity nawk jq ];
-    script = ''
-      /home/jevin/code/github/duplicity-backup.sh/duplicity-backup.sh -c /home/jevin/.config/duplicity-backup.conf -b
-    '';
-  };
-  systemd.timers.duplicity_backup = {
-    wantedBy = [ "timers.target" ];
-    partOf = [ "duplicity_backup.service" ];
-    timerConfig = {
-      OnUnitActiveSec = "24h"; # 24 hours since it was run last
-      Unit = "duplicity_backup.service";
-    };
-  };
-
+  # systemd.services.duplicity_backup= {
+  #   serviceConfig.Type = "oneshot";
+  #   path = with pkgs; [ bash duplicity nawk jq ];
+  #   script = ''
+  #     /home/jevin/code/github/duplicity-backup.sh/duplicity-backup.sh -c /home/jevin/.config/duplicity-backup.conf -b
+  #   '';
+  # };
+  # systemd.timers.duplicity_backup = {
+  #   wantedBy = [ "timers.target" ];
+  #   partOf = [ "duplicity_backup.service" ];
+  #   timerConfig = {
+  #     OnUnitActiveSec = "24h"; # 24 hours since it was run last
+  #     Unit = "duplicity_backup.service";
+  #   };
+  # };
 
   # Use the systemd-boot EFI boot loader.
   # boot.loader.systemd-boot.enable = true;
@@ -52,6 +60,7 @@
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "nodev";
   boot.loader.grub.efiSupport = true;
+  boot.loader.grub.configurationLimit = 20;
   boot.loader.efi.canTouchEfiVariables = true;
 
   # boot.loader.grub.extraEntries = ''
@@ -98,7 +107,10 @@
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
-
+  # services.xserver = {
+  #   layout = "us";
+  #   xkbVariant = "colemak";
+  # };
 
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
@@ -173,11 +185,16 @@
   users.users.jevin = {
     shell = pkgs.zsh;
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "docker" "dialout" "audio"]; # Dialout if for usb/serial access for arduino
+    extraGroups = [ "plugdev" "wheel" "networkmanager" "docker" "dialout" "audio"]; # Dialout if for usb/serial access for arduino
   };
 
   # users.users.tyler = {
   #   shell = pkgs.zsh;
+  #   isNormalUser = true;
+  #   extraGroups = [ "wheel" "networkmanager" "docker" "dialout" "audio"]; # Dialout if for usb/serial access for arduino
+  # };
+
+  # users.users.oren = {
   #   isNormalUser = true;
   #   extraGroups = [ "wheel" "networkmanager" "docker" "dialout" "audio"]; # Dialout if for usb/serial access for arduino
   # };
@@ -194,8 +211,8 @@
 
 
     permittedInsecurePackages = [
-      "electron"
-      "todoist-electron"
+      "electron-13.6.9"
+      # "todoist-electron"
       #"adobe-reader"
     ];
   };
@@ -213,13 +230,14 @@
     unstable.zoom-us
     speedtest-cli
     pavucontrol
-    unstable.synology-drive
+    unstable.synology-drive-client
     kitty
     unstable._1password-gui
     unstable.slack
     unstable.k9s
     kubectl
     docker
+    docker-compose
     ripgrep
     file
     ffmpeg
@@ -273,7 +291,7 @@
     pywal
     steam
     wally-cli
-    discord
+    unstable.discord
     vlc
     cubicsdr
     sdrangel
@@ -286,7 +304,6 @@
     helvum
     esphome
     duplicity
-    etcher
     signal-desktop
     ansible_2_10
     gcalcli
@@ -299,6 +316,10 @@
     qalculate-gtk
     apprise
     pandoc
+    nasc
+    doctl
+    qcad
+    zip
   ];
 
   programs.gnupg.agent.enable = true;
@@ -343,9 +364,9 @@
   };
 
 
-  virtualisation.virtualbox.host.enable = true;
-  users.extraGroups.vboxusers.members = [ "jevin" ];
-  virtualisation.virtualbox.host.enableExtensionPack = true;
+  # virtualisation.virtualbox.host.enable = true;
+  # users.extraGroups.vboxusers.members = [ "jevin" ];
+  # virtualisation.virtualbox.host.enableExtensionPack = true;
 
   # ----- USER STUFF ------
   #
