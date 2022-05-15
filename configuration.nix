@@ -18,9 +18,15 @@
     ];
   };
 
+  location = {
+    latitude = 45.42;
+    longitude = -75.70;
+  };
+
   hardware.keyboard.zsa.enable = true;
 
   services.hardware.bolt.enable = true;
+  services.ratbagd.enable = true;
 
   nix = {
     package = pkgs.nixUnstable; # or versioned attributes like nix_2_4
@@ -28,6 +34,9 @@
       experimental-features = nix-command flakes
     '';
    };
+
+  services.flatpak.enable = true;
+  services.tailscale.enable = true;
 
   # services.sshd.enable = true;
 
@@ -94,6 +103,11 @@
   networking.interfaces.enp0s31f6.useDHCP = true;
   networking.interfaces.wlp0s20f3.useDHCP = true;
 
+  # programs._1password-gui = {
+  #   enable = true;
+  #   polkitPolicyOwners = ["jevin" "jevinhumi"];
+  # };
+
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
@@ -150,39 +164,50 @@
   hardware.sane.enable = true;
   hardware.sane.drivers.scanSnap.enable = true;
   hardware.enableAllFirmware = true;
+  hardware.enableRedistributableFirmware = true;
 
   # Amateur radio stuff
 
-  services.sdrplayApi.enable = true;
-  nixpkgs.overlays = [
-    (
-      self: super:
-      {
-        soapysdr-with-plugins = self.soapysdr.override { extraPackages = [ self.soapysdrplay ]; };
-        sdrpp-with-sdrplay = self.sdrpp.override { sdrplay_source= true; };
-      }
-    )
-    # Zoom screen sharing
-    (
-      self: super:
-      {
-       zoomUsFixed = pkgs.zoom-us.overrideAttrs (old: {
-        postFixup = old.postFixup + ''
-        wrapProgram $out/bin/zoom-us --unset XDG_SESSION_TYPE
-      '';});
-         zoom = pkgs.zoom-us.overrideAttrs (old: {
-      postFixup = old.postFixup + ''
-        wrapProgram $out/bin/zoom --unset XDG_SESSION_TYPE
-      '';});
-      }
-      )
-  ];
+  # services.sdrplayApi.enable = true;
+  # nixpkgs.overlays = [
+  #   (
+  #     self: super:
+  #     {
+  #       soapysdr-with-plugins = self.soapysdr.override { extraPackages = [ self.soapysdrplay ]; };
+  #       sdrpp-with-sdrplay = self.sdrpp.override { sdrplay_source= true; };
+  #     }
+  #   )
+  #   # Zoom screen sharing
+  #   (
+  #     self: super:
+  #     {
+  #      zoomUsFixed = pkgs.zoom-us.overrideAttrs (old: {
+  #       postFixup = old.postFixup + ''
+  #       wrapProgram $out/bin/zoom-us --unset XDG_SESSION_TYPE
+  #     '';});
+  #        zoom = pkgs.zoom-us.overrideAttrs (old: {
+  #     postFixup = old.postFixup + ''
+  #       wrapProgram $out/bin/zoom --unset XDG_SESSION_TYPE
+  #     '';});
+  #     }
+  #     )
+  # ];
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
+  users.mutableUsers = false;
+
   users.users.jevin = {
+    shell = pkgs.zsh;
+    isNormalUser = true;
+    extraGroups = [ "plugdev" "wheel" "networkmanager" "docker" "dialout" "audio"]; # Dialout if for usb/serial access for arduino
+    
+    # `nix-shell -p mkpasswd --run 'mkpasswd -m sha-512'`
+    hashedPassword = "$6$RQ3xn2S3O1RFFqiA$e725RMH8eJgw4JJ4UnSjuzJ1Pw5lNNaFRW.9M2XCrcCJsAbWPg5qs5hzRZARiK9uastNZN9XnUGBs8yM6kdMZ0";
+  };
+
+  users.users.jevinhumi = {
     shell = pkgs.zsh;
     isNormalUser = true;
     extraGroups = [ "plugdev" "wheel" "networkmanager" "docker" "dialout" "audio"]; # Dialout if for usb/serial access for arduino
