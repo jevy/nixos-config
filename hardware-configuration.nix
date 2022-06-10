@@ -26,5 +26,5 @@
 
   swapDevices = [ ];
 
-  powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
+  # powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
 }

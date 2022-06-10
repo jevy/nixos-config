@@ -7,26 +7,38 @@
 {
   imports =
     [
-      <nixos-hardware/lenovo/thinkpad/x280>
+      <nixos-hardware/lenovo/thinkpad/x1/7th-gen>
       ./hardware-configuration.nix
     ];
 
   hardware.opengl = {
     enable = true;
-    extraPackages = with pkgs; [
-      intel-compute-runtime
-    ];
   };
+
+  # services.xserver.videoDrivers =  [
+  #   "intel-media-driver"
+  # ];
 
   location = {
     latitude = 45.42;
     longitude = -75.70;
   };
 
+  services.tlp = {
+    enable = true;
+    settings = {
+      START_CHARGE_THRESH_BAT0 = 75;
+      STOP_CHARGE_THRESH_BAT0 = 80;
+      WIFI_PWR_ON_AC = "on";
+      USB_AUTOSUSPEND = 0;
+    };
+  };
+  services.power-profiles-daemon.enable = false;
+
   hardware.keyboard.zsa.enable = true;
 
   services.hardware.bolt.enable = true;
-  services.ratbagd.enable = true;
+  # services.ratbagd.enable = true;
 
   nix = {
     package = pkgs.nixUnstable; # or versioned attributes like nix_2_4
@@ -35,32 +47,10 @@
     '';
    };
 
-  services.flatpak.enable = true;
-  services.tailscale.enable = true;
+  # services.tailscale.enable = true;
+  # networking.firewall.checkReversePath = "loose";
 
   # services.sshd.enable = true;
-
-  #
-  # Backup
-  # Reference: https://www.codyhiar.com/blog/repeated-tasks-with-systemd-service-timers-on-nixos/
-  # To make it run at the user level, need to do this: https://nixos.org/manual/nixos/stable/index.html#sect-nixos-systemd-nixos
-  # I just copied all my ssh stuff into the root dir for now.
-
-  # systemd.services.duplicity_backup= {
-  #   serviceConfig.Type = "oneshot";
-  #   path = with pkgs; [ bash duplicity nawk jq ];
-  #   script = ''
-  #     /home/jevin/code/github/duplicity-backup.sh/duplicity-backup.sh -c /home/jevin/.config/duplicity-backup.conf -b
-  #   '';
-  # };
-  # systemd.timers.duplicity_backup = {
-  #   wantedBy = [ "timers.target" ];
-  #   partOf = [ "duplicity_backup.service" ];
-  #   timerConfig = {
-  #     OnUnitActiveSec = "24h"; # 24 hours since it was run last
-  #     Unit = "duplicity_backup.service";
-  #   };
-  # };
 
   # Use the systemd-boot EFI boot loader.
   # boot.loader.systemd-boot.enable = true;
@@ -71,24 +61,6 @@
   boot.loader.grub.efiSupport = true;
   boot.loader.grub.configurationLimit = 20;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  # boot.loader.grub.extraEntries = ''
-# 	menuentry "Windows Boot Manager (on /dev/nvme0n1p4)" --class windows --class os {
-# 		insmod part_gpt
-# 		insmod fat
-# 		search --no-floppy --fs-uuid --set=root 40E2-A3BF
-# 		chainloader /EFI/Microsoft/Boot/bootmgfw.efi
-# 	}
-#
-#
-#	menuentry "Arch" --class arch --class os {
-		# insmod part_gpt
-		# insmod ext2
-		# insmod fat
-		# search --no-floppy --fs-uuid --set=root 40E2-A3BF
-		# chainloader /EFI/fedora/grubx64.efi
-	# }
-# '';
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -103,21 +75,17 @@
   networking.interfaces.enp0s31f6.useDHCP = true;
   networking.interfaces.wlp0s20f3.useDHCP = true;
 
-  # programs._1password-gui = {
-  #   enable = true;
-  #   polkitPolicyOwners = ["jevin" "jevinhumi"];
-  # };
+  programs._1password = {
+    enable = true;
+    gid = 5001;
+    # polkitPolicyOwners = ["jevin" "jevinhumi"];
+  };
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Select internationalisation properties.
-  # i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  # };
+  programs._1password-gui = {
+    enable = true;
+    gid = 5000;
+    polkitPolicyOwners = ["jevin" "jevinhumi"];
+  };
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
@@ -127,12 +95,14 @@
   # };
 
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.xserver.displayManager = {
+    gdm.enable = true;
+    defaultSession = "sway";
+  };
 
-  # Configure keymap in X11
-  # services.xserver.layout = "us";
-  # services.xserver.xkbOptions = "eurosign:e";
+  services.xserver.desktopManager = {
+    gnome.enable = true;
+  };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -146,7 +116,6 @@
   # sound.enable = false;
   hardware.bluetooth.enable = true;
   hardware.pulseaudio.enable = false;
-  programs.noisetorch.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -155,10 +124,6 @@
     pulse.enable = true;
     # If you want to use JACK applications, uncomment this
     #jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
   };
 
   hardware.sane.enable = true;
@@ -201,7 +166,7 @@
   users.users.jevin = {
     shell = pkgs.zsh;
     isNormalUser = true;
-    extraGroups = [ "plugdev" "wheel" "networkmanager" "docker" "dialout" "audio"]; # Dialout if for usb/serial access for arduino
+    extraGroups = [ "libvirtd" "plugdev" "wheel" "networkmanager" "docker" "dialout" "audio" "video"]; # Dialout if for usb/serial access for arduino
     
     # `nix-shell -p mkpasswd --run 'mkpasswd -m sha-512'`
     hashedPassword = "$6$RQ3xn2S3O1RFFqiA$e725RMH8eJgw4JJ4UnSjuzJ1Pw5lNNaFRW.9M2XCrcCJsAbWPg5qs5hzRZARiK9uastNZN9XnUGBs8yM6kdMZ0";
@@ -210,7 +175,9 @@
   users.users.jevinhumi = {
     shell = pkgs.zsh;
     isNormalUser = true;
-    extraGroups = [ "plugdev" "wheel" "networkmanager" "docker" "dialout" "audio"]; # Dialout if for usb/serial access for arduino
+    extraGroups = [ "plugdev" "wheel" "networkmanager" "docker" "dialout" "audio" "video"]; # Dialout if for usb/serial access for arduino
+
+    hashedPassword = "$6$aw5LoOsiqpalwsvN$NvzZMxYQoBU.uKE6LUG5algVkjp9QoRcRg3EPNL2/zbRH4WAYII5VDu7hgj59Kmjt0lwQ5Vf.lvoALh4fvfik/";
   };
 
   # users.users.tyler = {
@@ -237,8 +204,6 @@
 
     permittedInsecurePackages = [
       "electron-13.6.9"
-      # "todoist-electron"
-      #"adobe-reader"
     ];
   };
 
@@ -288,6 +253,23 @@
   # users.extraGroups.vboxusers.members = [ "jevin" ];
   # virtualisation.virtualbox.host.enableExtensionPack = true;
 
+  # virtualisation.docker.enable = true;
+
+  # From: https://www.reddit.com/r/VFIO/comments/p4kmxr/tips_for_single_gpu_passthrough_on_nixos/
+  # Also need to update: <ioapic driver="kvm"/>
+  # Enable libvirtd
+  # virtualisation.libvirtd = {
+  #   enable = true;
+  #   # onBoot = "ignore";
+  #   # onShutdown = "shutdown";
+  #   qemu.ovmf.enable = true;
+  #   qemu.runAsRoot = true;
+  # };
+  # programs.dconf.enable = true;
+  # environment.systemPackages = with pkgs; [ virt-manager ];
+  # boot.kernelParams = [ "intel_iommu=on" "iommu=pt" ];
+  # boot.kernelModules = [ "kvm-intel" "vfio-pci" ];
+
   # ----- USER STUFF ------
   #
   #
@@ -295,14 +277,15 @@
     fonts = [
               pkgs.meslo-lgs-nf
               pkgs.weather-icons
+              pkgs.font-awesome
             ];
             fontconfig.defaultFonts.emoji = [
               "MesloLGS NF"
               "Weather Icons"
+              "Font Awesome 5 Free"
             ];
   };
 
-  virtualisation.docker.enable = true;
 
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -318,13 +301,7 @@
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
 
-  services.fwupd.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+  # services.fwupd.enable = true;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
@@ -332,8 +309,8 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "21.11"; # Did you read the comment?
-  boot.kernelPackages = pkgs.linuxPackages_5_15;
+  system.stateVersion = "22.05"; # Did you read the comment?
+  boot.kernelPackages = pkgs.linuxPackages_5_17;
 
 }
 
