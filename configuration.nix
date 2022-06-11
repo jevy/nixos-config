@@ -133,6 +133,14 @@
 
   # Amateur radio stuff
 
+  nixpkgs.overlays = [
+    (
+      self: super:
+      {
+        rofi-with-plugins = self.rofi.override { plugins = [ pkgs.rofi-calc ]; };
+      }
+    )
+  ];
   # services.sdrplayApi.enable = true;
   # nixpkgs.overlays = [
   #   (
@@ -224,8 +232,7 @@
       waybar
       wl-clipboard
       mako # notification daemon
-      rofi
-      rofi-calc
+      rofi-with-plugins
       #wofi
       wlsunset
       pamixer
