@@ -27,8 +27,8 @@
   services.tlp = {
     enable = true;
     settings = {
-      START_CHARGE_THRESH_BAT0 = 75;
-      STOP_CHARGE_THRESH_BAT0 = 80;
+      START_CHARGE_THRESH_BAT0 = 80;
+      STOP_CHARGE_THRESH_BAT0 = 90;
       WIFI_PWR_ON_AC = "on";
       USB_AUTOSUSPEND = 0;
     };
@@ -47,8 +47,8 @@
     '';
    };
 
-  # services.tailscale.enable = true;
-  # networking.firewall.checkReversePath = "loose";
+  services.tailscale.enable = true;
+  networking.firewall.checkReversePath = "loose";
 
   # services.sshd.enable = true;
 
@@ -68,10 +68,7 @@
   # Set your time zone.
   time.timeZone = "America/Toronto";
 
-  # The global useDHCP flag is deprecated, therefore explicitly set to false here.
-  # Per-interface useDHCP will be mandatory in the future, so this generated config
-  # replicates the default behaviour.
-  networking.useDHCP = false;
+  # networking.useDHCP = true;
   networking.interfaces.enp0s31f6.useDHCP = true;
   networking.interfaces.wlp0s20f3.useDHCP = true;
 
@@ -112,15 +109,19 @@
   services.chrony.enable = true;
   services.timesyncd.enable = false;
 
-  # Enable sound.
-  # sound.enable = false;
-  hardware.bluetooth.enable = true;
+  # https://nixos.wiki/wiki/PipeWire
+  sound.enable = false; # Alsa
+  hardware.bluetooth = {
+    enable = true;
+  };
+  services.blueman.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
+    wireplumber.enable = true;
+    # alsa.enable = true;
+    # alsa.support32Bit = true;
     pulse.enable = true;
     # If you want to use JACK applications, uncomment this
     #jack.enable = true;
@@ -174,7 +175,7 @@
   users.users.jevin = {
     shell = pkgs.zsh;
     isNormalUser = true;
-    extraGroups = [ "libvirtd" "plugdev" "wheel" "networkmanager" "docker" "dialout" "audio" "video"]; # Dialout if for usb/serial access for arduino
+    extraGroups = [ "qemu-libvirtd" "libvirtd" "plugdev" "wheel" "networkmanager" "docker" "dialout" "audio" "video"]; # Dialout if for usb/serial access for arduino
     
     # `nix-shell -p mkpasswd --run 'mkpasswd -m sha-512'`
     hashedPassword = "$6$RQ3xn2S3O1RFFqiA$e725RMH8eJgw4JJ4UnSjuzJ1Pw5lNNaFRW.9M2XCrcCJsAbWPg5qs5hzRZARiK9uastNZN9XnUGBs8yM6kdMZ0";
@@ -256,11 +257,12 @@
   };
 
 
-  # virtualisation.virtualbox.host.enable = true;
-  # users.extraGroups.vboxusers.members = [ "jevin" ];
-  # virtualisation.virtualbox.host.enableExtensionPack = true;
+  virtualisation.libvirtd.enable = true; 
+  virtualisation.virtualbox.host.enable = true;
+  users.extraGroups.vboxusers.members = [ "jevin" "jevinhumi" ];
+  virtualisation.virtualbox.host.enableExtensionPack = true;
 
-  # virtualisation.docker.enable = true;
+  virtualisation.docker.enable = true;
 
   # From: https://www.reddit.com/r/VFIO/comments/p4kmxr/tips_for_single_gpu_passthrough_on_nixos/
   # Also need to update: <ioapic driver="kvm"/>
